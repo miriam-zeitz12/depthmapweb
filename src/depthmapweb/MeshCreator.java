@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 
 import obj.Point3D;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +68,7 @@ public class MeshCreator {
         ByteArrayInputStream in = new ByteArrayInputStream(imgData);
         FileOutputStream out =
                 new FileOutputStream(outFile);
-        DataExtractor.copy(in, out, 1024);
+        IOUtils.copy(in, out);
         //read it back in
         storeImg = ImageIO.read(outFile);
         //get the points
