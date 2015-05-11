@@ -70,8 +70,15 @@ public class MeshCreator {
         DataExtractor.copy(in, out, 1024);
         //read it back in
         storeImg = ImageIO.read(outFile);
+        //get the points
+        //List<Point3D> points = getPoints();
+        Point3D[] points = getPoints();
+        int height = storeImg.getHeight();
+        int width = storeImg.getWidth();
         logger.info("Image is null: {}", Boolean.toString(storeImg == null));
         //now spawn a PhotoObjWriter
+        PhotoObjWriter writer = new PhotoObjWriter(outFilePath);
+        writer.writePhotoObj(width,height,points);
     }
     /**
      * Returns the width of the image to be processed.
@@ -95,11 +102,13 @@ public class MeshCreator {
      * @return The list consisting of the "point cloud" created from the depth
      *         map.
      */
-    public List<Point3D> getPoints() {
+    public Point3D[] getPoints() {
         // we have the bitmap so let's first get height and width
-        List<Point3D> returnPoints = new ArrayList<Point3D>();
+
+        //List<Point3D> returnPoints = new ArrayList<Point3D>();
         int height = storeImg.getHeight();
         int width = storeImg.getWidth();
+        Point3D[] returnPoints = new Point3D[height*width];
         int[][] pixelArray = ImageHelper.getPixels2DArray(storeImg);
         // now make the points.
         int counter = 1; // counts the vectorIDs. Replace this with a static int
@@ -125,7 +134,7 @@ public class MeshCreator {
                 if (z < minZ)
                     minZ = z;
                 Point3D newPoint = new Point3D(x, y, z, counter);
-                returnPoints.add(newPoint);
+                returnPoints[counter-1] = newPoint;
                 counter++;
             }
         }

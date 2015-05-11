@@ -22,18 +22,18 @@ public class PhotoObjWriter extends ObjWriter {
      * @param y the height of the photo in pixels (vertices
      * @param vertices
      */
-    public void writePhotoObj(int x, int y, List<Point3D> vertices) {
+    public void writePhotoObj(int x, int y, Point3D[] vertices) {
         beginWrite();
         for (Point3D vertex : vertices) {
-            Point3D vertexPlusBase =
-                    new Point3D(vertex.getPointID(), vertex.getX(),
-                            vertex.getY(), vertex.getZ() + baseDepth);
-            addVertex(vertexPlusBase);
+//            Point3D vertexPlusBase =
+//                    new Point3D(vertex.getPointID(), vertex.getX(),
+//                            vertex.getY(), vertex.getZ() + baseDepth);
+            addVertex(vertex);
         }
-        addBottomVertices(vertices.get(0), vertices.get(x - 1),
-                vertices.get(x * y - 1), vertices.get(x * (y - 1)));
-        addPhotoFace(x, y);
-        addSidesAndBtmFaces(x, y);
+//        addBottomVertices(vertices.get(0), vertices.get(x - 1),
+//                vertices.get(x * y - 1), vertices.get(x * (y - 1)));
+//        addPhotoFace(x, y);
+//        addSidesAndBtmFaces(x, y);
         endWrite();
     }
     private void addPhotoFace(int x, int y) {
