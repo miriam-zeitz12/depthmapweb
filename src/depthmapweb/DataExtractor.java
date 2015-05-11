@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
-//import android.util.Base64;
-//USED FOR TESTING IN JVM
 
 /**
  * Extracts data from depth maps. Ideally this would just be static methods, but

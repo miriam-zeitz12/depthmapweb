@@ -1,14 +1,21 @@
 package depthmapweb;
 import image.ImageHelper;
+
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.imageio.ImageIO;
+
 import obj.Point3D;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.adobe.xmp.impl.Base64;
 
 /**
@@ -48,28 +55,23 @@ public class MeshCreator {
         logger.info("Found data: near: {}, far: {}", Double.toString(near),
                 Double.toString(far));
         logger.info("Base64: {}", new String(data));
-        // now make a Bitmap out of it, read stream so we don't have to
-        // care about indexing directly
+        // now make an image out of it!
         logger.info("Length of data: {}", Integer.toString(data.length));
         logger.info("First byte in data: {}", Byte.toString(data[0]));
         logger.info("Last byte in data: {}",
                 Byte.toString(data[data.length - 1]));
-        File outFile = new File(outFilePath);
+        File outFile = new File("out-tmp.png");
         // String outPath = outFile.getAbsolutePath();
         byte[] imgData = Base64.decode(data);
-        // ByteArrayInputStream in = new ByteArrayInputStream(imgData);
-        // FileOutputStream out = new FileOutputStream(outPath);
-        // IOUtils.copy(in,out);
-        // FlushedInputStream is = new FlushedInputStream(new
-        // ByteArrayInputStream(imgData));
-        // FileInputStream newFile = new FileInputStream(outFile);
-        // DataExtractor.copy(is, out,1024);
-        // out.close();
-        // FileInputStream in = new FileInputStream(outFile);
+        //write to PNG so we can use ImageIO to figure out how this works
+        ByteArrayInputStream in = new ByteArrayInputStream(imgData);
+        FileOutputStream out =
+                new FileOutputStream(outFile);
+        DataExtractor.copy(in, out, 1024);
+        //read it back in
         storeImg = ImageIO.read(outFile);
-        // in.reset();
-        // storeImg = BitmapFactory.decodeStream(in);
         logger.info("Image is null: {}", Boolean.toString(storeImg == null));
+        //now spawn a PhotoObjWriter
     }
     /**
      * Returns the width of the image to be processed.
