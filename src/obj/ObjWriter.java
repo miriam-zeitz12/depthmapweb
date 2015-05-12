@@ -2,7 +2,6 @@ package obj;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
 public class ObjWriter {
@@ -13,7 +12,7 @@ public class ObjWriter {
     protected PrintWriter writer;
     protected final String commentTag = "# ";
     protected String fileHeader = "Default header";
-    //private String toWrite;
+    // private String toWrite;
     public ObjWriter(String file) {
         fileName = file;
     }
@@ -57,8 +56,8 @@ public class ObjWriter {
         writer.println(vertexString);
         vertexCount++;
     }
-    public void addFace(int vertexA, int vertexB, int vertexC, int vertexD) {
-        writer.println("f " + vertexA + " " + vertexB + " " + vertexC + " " + vertexD);
+    public void addFace(int vertexA, int vertexB, int vertexC) {
+        writer.println("f " + vertexA + " " + vertexB + " " + vertexC);
     }
     public void addComment(String comment) {
         writer.println(commentTag + comment);

@@ -1,23 +1,15 @@
 package depthmapweb;
-import image.ImageHelper;
-
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.imageio.ImageIO;
-
 import obj.Point3D;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.adobe.xmp.impl.Base64;
 
 /**
@@ -65,15 +57,14 @@ public class MeshCreator {
         File outFile = new File("out-tmp.png");
         // String outPath = outFile.getAbsolutePath();
         byte[] imgData = Base64.decode(data);
-        //write to PNG so we can use ImageIO to figure out how this works
+        // write to PNG so we can use ImageIO to figure out how this works
         ByteArrayInputStream in = new ByteArrayInputStream(imgData);
-        FileOutputStream out =
-                new FileOutputStream(outFile);
+        FileOutputStream out = new FileOutputStream(outFile);
         IOUtils.copy(in, out);
-        //read it back in
+        // read it back in
         storeImg = ImageIO.read(outFile);
-        //get the points
-        //List<Point3D> points = getPoints();
+        // get the points
+        // List<Point3D> points = getPoints();
         Point3D[] points = getPoints();
         int s = 6;
         int height = storeImg.getHeight();
@@ -81,9 +72,9 @@ public class MeshCreator {
         int w = width / s;
         int h = height / s;
         logger.info("Image is null: {}", Boolean.toString(storeImg == null));
-        //now spawn a PhotoObjWriter
+        // now spawn a PhotoObjWriter
         PhotoObjWriter writer = new PhotoObjWriter(outFilePath);
-        writer.writePhotoObj(w,h,points);
+        writer.writePhotoObj(w, h, points);
     }
     /**
      * Returns the width of the image to be processed.
@@ -109,17 +100,17 @@ public class MeshCreator {
      */
     public Point3D[] getPoints() {
         // we have the bitmap so let's first get height and width
-
-        //List<Point3D> returnPoints = new ArrayList<Point3D>();
+        // List<Point3D> returnPoints = new ArrayList<Point3D>();
         int s = 6;
         int height = storeImg.getHeight();
         int width = storeImg.getWidth();
         int w = width / s;
         int h = height / s;
-        Point3D[] returnPoints = new Point3D[h*w];
+        Point3D[] returnPoints = new Point3D[h * w];
         byte[] pixels =
-                ((DataBufferByte) storeImg.getRaster().getDataBuffer()).getData();
-        //int[][] pixelArray = ImageHelper.getPixels2DArray(storeImg);
+                ((DataBufferByte) storeImg.getRaster().getDataBuffer())
+                        .getData();
+        // int[][] pixelArray = ImageHelper.getPixels2DArray(storeImg);
         // now make the points.
         int counter = 1; // counts the vectorIDs. Replace this with a static int
                          // in point3D.
@@ -129,15 +120,15 @@ public class MeshCreator {
         for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {
                 // I think ?? you want x & y revered like this?
-
                 // now make the point
-//                if (z < minZ)
-//                    minZ = z;
-                double newX = (x - 0.5*w) / w;
-                double newY = (y - 0.5*h) / h;
-
-                int p = (int) (Math.round( ( ( -newY + .5 ) ) * ( height - 1 ) ) *
-                        width * 3 + Math.round( ( ( newX + .5 ) ) * ( width -1) ) * 3);
+                // if (z < minZ)
+                // minZ = z;
+                double newX = (x - 0.5 * w) / w;
+                double newY = (y - 0.5 * h) / h;
+                int p =
+                        (int) (Math.round(((-newY + .5)) * (height - 1))
+                                * width * 3 + Math.round(((newX + .5))
+                                * (width - 1)) * 3);
                 double dn = pixels[p]; // this PROBABLY
                 // works. First
                 // debug to check
@@ -145,16 +136,16 @@ public class MeshCreator {
                 // look like?
                 dn = dn / 255.;
                 double rd = (far * near) / (far - dn * (far - near)); // see the
-                                // Android
-                                // depth
-                                // map
-                                // algorithm
-                                // link
+                // Android
+                // depth
+                // map
+                // algorithm
+                // link
                 double newZ = -rd;
                 newX *= rd * 1;
                 newY *= rd * ar;
                 Point3D newPoint = new Point3D(counter, newX, newY, newZ);
-                returnPoints[counter-1] = newPoint;
+                returnPoints[counter - 1] = newPoint;
                 counter++;
             }
         }
