@@ -29,10 +29,10 @@ public class PhotoObjWriter extends ObjWriter {
             // vertex.getY(), vertex.getZ() + baseDepth);
             addVertex(vertex);
         }
-        // addBottomVertices(vertices[0], vertices[x - 1], vertices[x * y - 1],
-        // vertices[x * (y - 1)]);
+        addBottomVertices(vertices[0], vertices[x - 1], vertices[x * y - 1],
+                vertices[x * (y - 1)]);
         addPhotoFace(x, y);
-        // addSidesAndBtmFaces(x, y);
+        addSidesAndBtmFaces(x, y);
         endWrite();
     }
     private void addPhotoFace(int x, int y) {
@@ -79,6 +79,8 @@ public class PhotoObjWriter extends ObjWriter {
         addFace(vertexH, vertexE, vertexA);
         addFace(vertexH, vertexG, vertexC);
         addFace(vertexG, vertexC, vertexD);
+        addFace(vertexE, vertexF, vertexG);
+        addFace(vertexG, vertexE, vertexH);
     }
     private void addBottomVertices(Point3D topA, Point3D topB, Point3D topC,
             Point3D topD) {
