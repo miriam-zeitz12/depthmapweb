@@ -2,6 +2,7 @@ package depthmapweb;
 import image.ImageHelper;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -74,12 +75,15 @@ public class MeshCreator {
         //get the points
         //List<Point3D> points = getPoints();
         Point3D[] points = getPoints();
+        int s = 6;
         int height = storeImg.getHeight();
         int width = storeImg.getWidth();
+        int w = width / s;
+        int h = height / s;
         logger.info("Image is null: {}", Boolean.toString(storeImg == null));
         //now spawn a PhotoObjWriter
         PhotoObjWriter writer = new PhotoObjWriter(outFilePath);
-        writer.writePhotoObj(width,height,points);
+        writer.writePhotoObj(w,h,points);
     }
     /**
      * Returns the width of the image to be processed.
@@ -107,34 +111,49 @@ public class MeshCreator {
         // we have the bitmap so let's first get height and width
 
         //List<Point3D> returnPoints = new ArrayList<Point3D>();
+        int s = 6;
         int height = storeImg.getHeight();
         int width = storeImg.getWidth();
-        Point3D[] returnPoints = new Point3D[height*width];
-        int[][] pixelArray = ImageHelper.getPixels2DArray(storeImg);
+        int w = width / s;
+        int h = height / s;
+        Point3D[] returnPoints = new Point3D[h*w];
+        byte[] pixels =
+                ((DataBufferByte) storeImg.getRaster().getDataBuffer()).getData();
+        //int[][] pixelArray = ImageHelper.getPixels2DArray(storeImg);
         // now make the points.
         int counter = 1; // counts the vectorIDs. Replace this with a static int
                          // in point3D.
         double minZ = Float.POSITIVE_INFINITY; // find the minimal as we go
                                                // along
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
+        double ar = height / width;
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
                 // I think ?? you want x & y revered like this?
-                double dn = pixelArray[y][x] & 0xff; // this PROBABLY
-                                                     // works. First
-                                                     // debug to check
-                                                     // what these values
-                                                     // look like?
-                dn = dn / 255.;
-                double z = (far * near) / (far - dn * (far - near)); // see the
-                                                                     // Android
-                                                                     // depth
-                                                                     // map
-                                                                     // algorithm
-                                                                     // link
+
                 // now make the point
-                if (z < minZ)
-                    minZ = z;
-                Point3D newPoint = new Point3D(x, y, z, counter);
+//                if (z < minZ)
+//                    minZ = z;
+                double newX = (x - 0.5*w) / w;
+                double newY = (y - 0.5*h) / h;
+
+                int p = (int) (Math.round( ( ( -newY + .5 ) ) * ( height - 1 ) ) *
+                        width * 3 + Math.round( ( ( newX + .5 ) ) * ( width -1) ) * 3);
+                double dn = pixels[p]; // this PROBABLY
+                // works. First
+                // debug to check
+                // what these values
+                // look like?
+                dn = dn / 255.;
+                double rd = (far * near) / (far - dn * (far - near)); // see the
+                                // Android
+                                // depth
+                                // map
+                                // algorithm
+                                // link
+                double newZ = -rd;
+                newX *= rd * 1;
+                newY *= rd * ar;
+                Point3D newPoint = new Point3D(counter, newX, newY, newZ);
                 returnPoints[counter-1] = newPoint;
                 counter++;
             }
