@@ -1,5 +1,4 @@
 package depthmapweb;
-import java.util.List;
 import obj.ObjWriter;
 import obj.Point3D;
 
@@ -25,31 +24,32 @@ public class PhotoObjWriter extends ObjWriter {
     public void writePhotoObj(int x, int y, Point3D[] vertices) {
         beginWrite();
         for (Point3D vertex : vertices) {
-//            Point3D vertexPlusBase =
-//                    new Point3D(vertex.getPointID(), vertex.getX(),
-//                            vertex.getY(), vertex.getZ() + baseDepth);
+            // Point3D vertexPlusBase =
+            // new Point3D(vertex.getPointID(), vertex.getX(),
+            // vertex.getY(), vertex.getZ() + baseDepth);
             addVertex(vertex);
         }
-        addBottomVertices(vertices[0], vertices[x - 1],
-                vertices[x * y - 1], vertices[x * (y - 1)]);
+        addBottomVertices(vertices[0], vertices[x - 1], vertices[x * y - 1],
+                vertices[x * (y - 1)]);
         addPhotoFace(x, y);
         addSidesAndBtmFaces(x, y);
         endWrite();
     }
     private void addPhotoFace(int x, int y) {
         int rowCount = 0;
-        while (rowCount < y) {
+        while (rowCount < y - 1) {
             addRow(rowCount, x);
             rowCount++;
         }
     }
     private void addRow(int row, int numInRow) {
         int idxInRow = 0;
-        int startVertex = row * numInRow;
+        int startVertex = row * numInRow + 1;
         int currVertex = startVertex;
-        while (idxInRow < numInRow) {
-            addFace(currVertex, currVertex + 1, currVertex + numInRow + 1,
-                    currVertex + numInRow);
+        while (idxInRow < numInRow - 1) {
+            addFace(currVertex, currVertex + 1, currVertex + numInRow);
+            addFace(currVertex + 1, currVertex + numInRow + 1, currVertex
+                    + numInRow);
             currVertex++;
             idxInRow++;
         }
@@ -69,25 +69,32 @@ public class PhotoObjWriter extends ObjWriter {
         int vertexF = x * y + 2;
         int vertexG = x * y + 3;
         int vertexH = x * y + 4;
-        addFace(vertexE, vertexF, vertexB, vertexA);
-        addFace(vertexB, vertexF, vertexG, vertexC);
-        addFace(vertexC, vertexD, vertexH, vertexG);
-        addFace(vertexD, vertexH, vertexE, vertexA);
-        addFace(vertexH, vertexG, vertexC, vertexD);
+        addFace(vertexE, vertexF, vertexA);
+        addFace(vertexF, vertexB, vertexA);
+        addFace(vertexB, vertexF, vertexC);
+        addFace(vertexF, vertexG, vertexC);
+        addFace(vertexC, vertexD, vertexH);
+        addFace(vertexD, vertexH, vertexG);
+        addFace(vertexD, vertexH, vertexE);
+        addFace(vertexH, vertexE, vertexA);
+        addFace(vertexH, vertexG, vertexC);
+        addFace(vertexG, vertexC, vertexD);
+        addFace(vertexE, vertexF, vertexG);
+        addFace(vertexG, vertexE, vertexH);
     }
     private void addBottomVertices(Point3D topA, Point3D topB, Point3D topC,
             Point3D topD) {
-        Point3D bottomA =
-                new Point3D(vertexCount + 1, topA.getX(), topA.getY(), 0);
+        vertexCount += 1;
+        Point3D bottomA = new Point3D(vertexCount, topA.getX(), topA.getY(), 0);
         addVertex(bottomA);
-        Point3D bottomB =
-                new Point3D(vertexCount + 1, topB.getX(), topB.getY(), 0);
+        vertexCount += 1;
+        Point3D bottomB = new Point3D(vertexCount, topB.getX(), topB.getY(), 0);
         addVertex(bottomB);
-        Point3D bottomC =
-                new Point3D(vertexCount + 1, topC.getX(), topC.getY(), 0);
+        vertexCount += 1;
+        Point3D bottomC = new Point3D(vertexCount, topC.getX(), topC.getY(), 0);
         addVertex(bottomC);
-        Point3D bottomD =
-                new Point3D(vertexCount + 1, topD.getX(), topD.getY(), 0);
+        vertexCount += 1;
+        Point3D bottomD = new Point3D(vertexCount, topD.getX(), topD.getY(), 0);
         addVertex(bottomD);
     }
 }
