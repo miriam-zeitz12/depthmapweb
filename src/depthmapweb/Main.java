@@ -1,4 +1,6 @@
 package depthmapweb;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -6,6 +8,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 import javax.json.Json;
@@ -26,14 +31,10 @@ public class Main {
      */
     public static final int DEFAULT_PORT = 9999;
     public static void main(String[] args) {
-        try {
                 //now test the mesh creation
-                MeshCreator creator = new MeshCreator("IMG_20150116_143419.jpg");
-                creator.extractAndWriteMesh("newtemp.obj");
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+//                MeshCreator creator = new MeshCreator("IMG_20150116_143419.jpg");
+//                creator.extractAndWriteMesh("newtemp.obj");
+            runSparkServer();
     }
     
     private static void runSparkServer() {
@@ -64,17 +65,54 @@ public class Main {
             MeshCreator creator = new MeshCreator(imgBytes, near, far);
             String tempFile = "out-temp-"+java.util.UUID.randomUUID()+".obj";
             creator.extractAndWriteMesh(tempFile);
+          //  Path path = FileSystems.getDefault().getPath(tempFile);
             File readFile = new File(tempFile);
-            FileInputStream responseStream = new FileInputStream(readFile);
+            //FileInputStream responseStream = new FileInputStream(readFile);
+
+            //res.raw().setContentLength((int)readFile.length());
+            //res.raw().setHeader("Content-Disposition", "attachment; filename="+tempFile);
             res.raw().setContentType("application/octet-stream");
-            OutputStream responseOutput = res.raw().getOutputStream();
-            IOUtils.copy(responseStream, responseOutput);
-            readFile.delete(); //clean up after ourselves
-            return res.raw();
+            res.raw().setCharacterEncoding("UTF-8");
+            int size = (int) readFile.length();
+            res.raw().setContentLength(size);
+            //res.raw().setHeader(CUSTOM_OUTPUT_LENGTH, Long.toString(readFile.length()));
+            BufferedOutputStream responseOutput = new BufferedOutputStream(res.raw().getOutputStream(), size);
+            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(readFile));
+
+         //   DataExtractor.copy(responseStream, responseOutput, 256);
+
+       //     res.raw().setContentLength(4);
+            //res.body("test");
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = buf.read(buffer)) > 0) {
+                responseOutput.write(buffer,0,len);
+            }
+            buf.close();
+            responseOutput.flush();
+            responseOutput.close();
+            //res.raw().setContentType("application/octet-stream");
+
+          //  res.raw().getWriter().write("test");
+//            res.raw().getWriter().flush();
+//            res.raw().getWriter().close();
+
+            System.out.println("HERE2");
+//            byte[] fileBytes = Files.readAllBytes(path);
+//            responseOutput.write(fileBytes);
+//            //IOUtils.copy(responseStream, responseOutput);
+//            System.out.println("HERE");
+//            res.status(200);
+//            readFile.delete(); //clean up after ourselves
+//            responseOutput.flush();
+//            responseOutput.close();
+//            return res.raw();
         } catch (IOException e) {
             //we should actually fail here honestly, but we can fail silently!
+            res.status(500); //internal server error
+            System.out.println("HERE3");
             e.printStackTrace();
         }
-        return null;
+        return res.raw();
     }
 }
