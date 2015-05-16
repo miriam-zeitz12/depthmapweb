@@ -12,6 +12,7 @@ public class ObjWriter {
     protected PrintWriter writer;
     protected final String commentTag = "# ";
     protected String fileHeader = "Default header";
+    protected int vertexNormalCount = 0;
     // private String toWrite;
     public ObjWriter(String file) {
         fileName = file;
@@ -55,6 +56,13 @@ public class ObjWriter {
                         + vertex.getZ();
         writer.println(vertexString);
         vertexCount++;
+    }
+    public void addVertexNormal(Point3D vertexNormal) {
+        String vertexNormalString =
+                "vn " + vertexNormal.getX() + " " + vertexNormal.getY() + " "
+                        + vertexNormal.getZ();
+        writer.println(vertexNormalString);
+        vertexNormalCount++;
     }
     public void addFace(int vertexA, int vertexB, int vertexC) {
         writer.println("f " + vertexA + " " + vertexB + " " + vertexC);

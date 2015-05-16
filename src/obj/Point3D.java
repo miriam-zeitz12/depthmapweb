@@ -38,4 +38,13 @@ public class Point3D {
     public String toString() {
         return pointID + ":[" + x + "," + y + "," + z + "]";
     }
+    public void setX(double newX) {
+        x = newX;
+    }
+    public void setY(double newY) {
+        y = newY;
+    }
+    public void setZ(double newZ) {
+        z = newZ;
+    }
 }
