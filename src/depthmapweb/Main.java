@@ -3,6 +3,8 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -51,67 +53,72 @@ public class Main {
      */
     private static Object handleMeshCreation(Request req, Response res) {
         //first get the JSON object representing our image and the near, far values
+        res.status(200);
+        System.out.println("Received request.");
         String imageJson = req.body(); //the entire request is the AJAX
         //now parse it in a format Java won't choke on
         JsonReader jsonReader = Json.createReader(
                 new StringReader(imageJson));
         JsonObject imageData = jsonReader.readObject();
+        System.out.println("Read the data");
         jsonReader.close();
         //Java's JSON interface is kind of strange
+        System.out.println("Trying to get image.");
         double near = imageData.getJsonNumber("near").doubleValue();
         double far = imageData.getJsonNumber("far").doubleValue();
-        String imgBytes = imageData.getString("imageData");
+        String imgBytes = DataExtractor.fixString(imageData.getString("imageData"));
+        
+        System.out.println("Got image successfully.");
+        //write imgBytes to a file before we do anything because Android sucks
         try {
+            FileOutputStream outTest = new FileOutputStream("android-test.txt");
+            outTest.write(imgBytes.getBytes(),0,imgBytes.getBytes().length);
+            outTest.close();
+        } catch (FileNotFoundException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        //create a UUID file as temp so we don't have collisions
+        String tempFile = "out-temp-"+java.util.UUID.randomUUID()+".obj";
+        File readFile = new File(tempFile);
+        try {
+            //Create the mesh
             MeshCreator creator = new MeshCreator(imgBytes, near, far);
-            String tempFile = "out-temp-"+java.util.UUID.randomUUID()+".obj";
+            //write to obj file because we don't want to deal with refactoring the entire code
             creator.extractAndWriteMesh(tempFile);
-          //  Path path = FileSystems.getDefault().getPath(tempFile);
-            File readFile = new File(tempFile);
-            //FileInputStream responseStream = new FileInputStream(readFile);
-
-            //res.raw().setContentLength((int)readFile.length());
-            //res.raw().setHeader("Content-Disposition", "attachment; filename="+tempFile);
+            //Content type must be application/octet-stream
             res.raw().setContentType("application/octet-stream");
             res.raw().setCharacterEncoding("UTF-8");
             int size = (int) readFile.length();
+            //res.status(200);
+            System.out.println("About to write to response.");
+            //avoid chunked encoding because it leads to strange exceptions
             res.raw().setContentLength(size);
-            //res.raw().setHeader(CUSTOM_OUTPUT_LENGTH, Long.toString(readFile.length()));
+            //write directly to the response outputstream
             BufferedOutputStream responseOutput = new BufferedOutputStream(res.raw().getOutputStream(), size);
             BufferedInputStream buf = new BufferedInputStream(new FileInputStream(readFile));
-
-         //   DataExtractor.copy(responseStream, responseOutput, 256);
-
-       //     res.raw().setContentLength(4);
-            //res.body("test");
+            //could use IOUtils.copy but we get less control over it if we do
             byte[] buffer = new byte[1024];
             int len;
             while ((len = buf.read(buffer)) > 0) {
                 responseOutput.write(buffer,0,len);
             }
-            buf.close();
             responseOutput.flush();
             responseOutput.close();
-            //res.raw().setContentType("application/octet-stream");
-
-          //  res.raw().getWriter().write("test");
-//            res.raw().getWriter().flush();
-//            res.raw().getWriter().close();
-
-            System.out.println("HERE2");
-//            byte[] fileBytes = Files.readAllBytes(path);
-//            responseOutput.write(fileBytes);
-//            //IOUtils.copy(responseStream, responseOutput);
-//            System.out.println("HERE");
-//            res.status(200);
-//            readFile.delete(); //clean up after ourselves
-//            responseOutput.flush();
-//            responseOutput.close();
-//            return res.raw();
+            buf.close();
         } catch (IOException e) {
             //we should actually fail here honestly, but we can fail silently!
             res.status(500); //internal server error
             System.out.println("HERE3");
             e.printStackTrace();
+        } finally {
+            //clean up after ourselves
+            System.out.println("Wrote response.");
+            readFile.delete();
         }
         return res.raw();
     }

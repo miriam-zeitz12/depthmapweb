@@ -87,6 +87,7 @@ public class MeshCreator {
         // read it back in
         storeImg = ImageIO.read(outFile);
         outFile.delete(); //delete it after it's in memory, we don't need it after.
+        //System.out.println(outFile.delete());
     }
 
     /**
