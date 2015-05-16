@@ -101,7 +101,7 @@ public class DataExtractor {
         }
         return -1;
     }
-    private static String fixString(String str) {
+    public static String fixString(String str) {
         int idx = 0;
         StringBuilder buf = new StringBuilder(str);
         while ((idx = buf.indexOf("http")) >= 0) {
@@ -144,7 +144,7 @@ public class DataExtractor {
                 test =
                         new String(Arrays.copyOfRange(segArr, dataStart + 13,
                                 dataEnd));
-                return fixString(test).getBytes("UTF-8");
+                return test.getBytes("UTF-8");
             }
             openIdx = indexOf(inputData, OPEN_ARR, closeIdx + 1);
         }
