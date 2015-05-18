@@ -29,34 +29,34 @@ public class MeshCreator {
     private double near;
     private double far;
     // private String outputFile;
-    /**
-     * Creates the 3D mesh from the depth map at inFilePath, and writes an .OBJ
-     * file at outFilePath.
-     * @param inFilePath - the path to the depth map as a Uri
-     * @throws IOException - if there's issues reading the depth map
-     */
-    public MeshCreator(String inFilePath)
-            throws IOException {
-        // first get the data
-        File imageFile = new File(inFilePath);
-        DataExtractor extract = new DataExtractor(imageFile);
-        byte[] data = extract.getDepthData();
-        if (data == null) {
-            throw new IllegalArgumentException(
-                    "Did not provide an image with depth map information.");
-        }
-        near = extract.getNear();
-        far = extract.getFar();
-        logger.info("Found data: near: {}, far: {}", Double.toString(near),
-                Double.toString(far));
-        logger.info("Base64: {}", new String(data));
-        // now make an image out of it!
-        logger.info("Length of data: {}", Integer.toString(data.length));
-        logger.info("First byte in data: {}", Byte.toString(data[0]));
-        logger.info("Last byte in data: {}",
-                Byte.toString(data[data.length - 1]));
-        getImageFromBase64(data);
-    }
+//    /**
+//     * Creates the 3D mesh from the depth map at inFilePath, and writes an .OBJ
+//     * file at outFilePath.
+//     * @param inFilePath - the path to the depth map as a Uri
+//     * @throws IOException - if there's issues reading the depth map
+//     */
+//    public MeshCreator(String inFilePath)
+//            throws IOException {
+//        // first get the data
+//        File imageFile = new File(inFilePath);
+//        DataExtractor extract = new DataExtractor(imageFile);
+//        byte[] data = extract.getDepthData();
+//        if (data == null) {
+//            throw new IllegalArgumentException(
+//                    "Did not provide an image with depth map information.");
+//        }
+//        near = extract.getNear();
+//        far = extract.getFar();
+//        logger.info("Found data: near: {}, far: {}", Double.toString(near),
+//                Double.toString(far));
+//        logger.info("Base64: {}", new String(data));
+//        // now make an image out of it!
+//        logger.info("Length of data: {}", Integer.toString(data.length));
+//        logger.info("First byte in data: {}", Byte.toString(data[0]));
+//        logger.info("Last byte in data: {}",
+//                Byte.toString(data[data.length - 1]));
+//        getImageFromBase64(data);
+//    }
 
     /**
      * Creates the mesh from pre-extracted data. Used for the server.

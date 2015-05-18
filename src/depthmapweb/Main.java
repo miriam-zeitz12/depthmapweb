@@ -1,6 +1,7 @@
 package depthmapweb;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -53,39 +54,35 @@ public class Main {
      */
     private static Object handleMeshCreation(Request req, Response res) {
         //first get the JSON object representing our image and the near, far values
-        res.status(200);
+        res.raw().setStatus(200);
         System.out.println("Received request.");
-        String imageJson = req.body(); //the entire request is the AJAX
-        //now parse it in a format Java won't choke on
-        JsonReader jsonReader = Json.createReader(
-                new StringReader(imageJson));
-        JsonObject imageData = jsonReader.readObject();
-        System.out.println("Read the data");
-        jsonReader.close();
-        //Java's JSON interface is kind of strange
-        System.out.println("Trying to get image.");
-        double near = imageData.getJsonNumber("near").doubleValue();
-        double far = imageData.getJsonNumber("far").doubleValue();
-        String imgBytes = DataExtractor.fixString(imageData.getString("imageData"));
-        
-        System.out.println("Got image successfully.");
-        //write imgBytes to a file before we do anything because Android sucks
-        try {
-            FileOutputStream outTest = new FileOutputStream("android-test.txt");
-            outTest.write(imgBytes.getBytes(),0,imgBytes.getBytes().length);
-            outTest.close();
-        } catch (FileNotFoundException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        
-        //create a UUID file as temp so we don't have collisions
+        String image = req.body(); //the entire request is the AJAX
+        ByteArrayInputStream x = new ByteArrayInputStream(image.getBytes());
         String tempFile = "out-temp-"+java.util.UUID.randomUUID()+".obj";
         File readFile = new File(tempFile);
-        try {
+        try{
+        DataExtractor extractor = new DataExtractor(x);
+        //now parse it in a format Java won't choke on
+
+//        try{
+//        JsonReader jsonReader = Json.createReader(
+//                new StringReader(imageJson));
+//        JsonObject imageData = jsonReader.readObject();
+//        System.out.println("Read the data");
+//        jsonReader.close();
+//        //Java's JSON interface is kind of strange
+//        System.out.println("Trying to get image.");
+
+
+        String imgBytes = new String(extractor.getDepthData());
+        //ORDER IS IMPORTANT
+        double near = extractor.getNear();
+        double far = extractor.getFar();
+        
+        System.out.println("Got image successfully.");
+        
+        //create a UUID file as temp so we don't have collisions
+
             //Create the mesh
             MeshCreator creator = new MeshCreator(imgBytes, near, far);
             //write to obj file because we don't want to deal with refactoring the entire code
@@ -112,11 +109,14 @@ public class Main {
             buf.close();
         } catch (IOException e) {
             //we should actually fail here honestly, but we can fail silently!
-            res.status(500); //internal server error
+            res.raw().setStatus(200); //internal server error
             System.out.println("HERE3");
             e.printStackTrace();
-        } finally {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
             //clean up after ourselves
+            res.raw().setStatus(200);
             System.out.println("Wrote response.");
             readFile.delete();
         }
