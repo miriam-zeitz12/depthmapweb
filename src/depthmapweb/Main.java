@@ -25,21 +25,7 @@ public class Main {
      */
     public static final int DEFAULT_PORT = 9999;
     public static void main(String[] args) {
-        // temp debug opt to test mesh w/o server
-        if (args[0] == "mesh") {
-            MeshCreator creator;
-            try {
-                creator = new MeshCreator("IMG_20150116_143419.jpg");
-                creator.extractAndWriteMesh("newtemp.obj");
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        // otherwise, run full program
-        else {
             runSparkServer();
-        }
     }
     private static void runSparkServer() {
         Spark.setPort(DEFAULT_PORT);
