@@ -7,23 +7,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
 
 import javax.json.Json;
-import javax.json.JsonReader;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 
-import org.apache.commons.io.IOUtils;
+import com.adobe.xmp.XMPException;
 
-import spark.ExceptionHandler;
-import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
@@ -34,18 +25,27 @@ public class Main {
      */
     public static final int DEFAULT_PORT = 9999;
     public static void main(String[] args) {
-                //now test the mesh creation
-//                MeshCreator creator = new MeshCreator("IMG_20150116_143419.jpg");
-//                creator.extractAndWriteMesh("newtemp.obj");
+        // temp debug opt to test mesh w/o server
+        if (args[0] == "mesh") {
+            MeshCreator creator;
+            try {
+                creator = new MeshCreator("IMG_20150116_143419.jpg");
+                creator.extractAndWriteMesh("newtemp.obj");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        // otherwise, run full program
+        else {
             runSparkServer();
+        }
     }
-    
     private static void runSparkServer() {
         Spark.setPort(DEFAULT_PORT);
-        Spark.post("/create", (request, response) -> handleMeshCreation(request, response));
+        Spark.post("/create",
+                (request, response) -> handleMeshCreation(request, response));
     }
-
-
     /**
      * Creates the mesh, and feeds it back to the user via an OutputStream
      * @param req - the HTTP Request
@@ -85,38 +85,41 @@ public class Main {
 
             //Create the mesh
             MeshCreator creator = new MeshCreator(imgBytes, near, far);
-            //write to obj file because we don't want to deal with refactoring the entire code
+            // write to obj file because we don't want to deal with refactoring
+            // the entire code
             creator.extractAndWriteMesh(tempFile);
-            //Content type must be application/octet-stream
+            // Content type must be application/octet-stream
             res.raw().setContentType("application/octet-stream");
             res.raw().setCharacterEncoding("UTF-8");
             int size = (int) readFile.length();
-            //res.status(200);
+            // res.status(200);
             System.out.println("About to write to response.");
-            //avoid chunked encoding because it leads to strange exceptions
+            // avoid chunked encoding because it leads to strange exceptions
             res.raw().setContentLength(size);
-            //write directly to the response outputstream
-            BufferedOutputStream responseOutput = new BufferedOutputStream(res.raw().getOutputStream(), size);
-            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(readFile));
-            //could use IOUtils.copy but we get less control over it if we do
+            // write directly to the response outputstream
+            BufferedOutputStream responseOutput =
+                    new BufferedOutputStream(res.raw().getOutputStream(), size);
+            BufferedInputStream buf =
+                    new BufferedInputStream(new FileInputStream(readFile));
+            // could use IOUtils.copy but we get less control over it if we do
             byte[] buffer = new byte[1024];
             int len;
             while ((len = buf.read(buffer)) > 0) {
-                responseOutput.write(buffer,0,len);
+                responseOutput.write(buffer, 0, len);
             }
             responseOutput.flush();
             responseOutput.close();
             buf.close();
         } catch (IOException e) {
-            //we should actually fail here honestly, but we can fail silently!
-            res.raw().setStatus(200); //internal server error
+            // we should actually fail here honestly, but we can fail silently!
+            res.status(500); // internal server error
             System.out.println("HERE3");
             e.printStackTrace();
-        } catch (Exception e) {
+        } catch (XMPException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
-        }finally {
-            //clean up after ourselves
-            res.raw().setStatus(200);
+        } finally {
+            // clean up after ourselves
             System.out.println("Wrote response.");
             readFile.delete();
         }
